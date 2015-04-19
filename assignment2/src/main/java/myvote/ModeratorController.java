@@ -114,6 +114,7 @@ public class ModeratorController extends WebSecurityConfigurerAdapter {
 		
 		String pollId= Integer.toString(new Random().nextInt(), 36).toUpperCase();
 		poll.setId(pollId);
+		poll.setCheck(false);
 		pollRep.save(poll);
 		m = moderatorRep.findById(mod_id);
 		pollList = m.getPollslist();
@@ -169,16 +170,16 @@ public class ModeratorController extends WebSecurityConfigurerAdapter {
 
 	@RequestMapping(value = "/moderators/{mod_id}/polls", method = RequestMethod.GET)
 	public ResponseEntity listAllPolls(@PathVariable int mod_id) {
-		ArrayList<Polls> stringlist1 = new ArrayList<Polls>();
+		ArrayList tempList = new ArrayList();
 		m = moderatorRep.findById(mod_id);
 		pollList = m.getPollslist();
 
 		for (int i = 0; i < pollList.size(); i++) {
 			p = pollRep.findById(pollList.get(i));
-			stringlist1.add(p);
+			tempList.add(p);
 
 		}
-		return new ResponseEntity(stringlist1, HttpStatus.OK);
+				return new ResponseEntity(tempList, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/moderators/{mod_id}/polls/{poll_id}", method = RequestMethod.DELETE)
@@ -207,11 +208,14 @@ public class ModeratorController extends WebSecurityConfigurerAdapter {
 	@RequestMapping(value = "/polls/{poll_id}", method = RequestMethod.PUT)
 	public ResponseEntity voteAPoll(@PathVariable String poll_id, @RequestParam(value = "choice") int choice_index) {
 		p = pollRep.findById(poll_id);
+		Map<String, Object> pollMap = new LinkedHashMap<String, Object>();
 		if (choice_index == 0) {
 			tempresult = p.getResult();
 			tempresult[choice_index] = tempresult[choice_index] + 1;
 			p.setResult(tempresult);
+			
 			pollRep.save(p);
+			
 			return new ResponseEntity(p, HttpStatus.NO_CONTENT);
 
 		} else if (choice_index == 1) {
